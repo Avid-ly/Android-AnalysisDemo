@@ -1,0 +1,39 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion cfgs.compileSdkVersion
+    buildToolsVersion cfgs.buildToolsVersion
+    defaultConfig {
+        applicationId "com.analysis.demo"
+        minSdkVersion cfgs.minSdkVersion
+        targetSdkVersion cfgs.targetSdkVersion
+        versionCode cfgs.sdkversionCode
+        versionName cfgs.sdkversionName
+        versionCode 1
+        versionName "1.0"
+        //testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk {
+            abiFilters 'armeabi', 'armeabi-v7a', 'x86', 'arm64-v8a'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+repositories {
+    flatDir {
+        dirs 'libs'
+    }
+}
+dependencies {
+    compile 'com.android.installreferrer:installreferrer:1.1'
+    implementation 'com.appsflyer:af-android-sdk:5.0.0'
+    implementation 'com.aly.sdk:analysissdk:4.0.0.6'
+    // aasdk support
+    implementation rootProject.ext.cfgs["supportV7"]
+
+
+}

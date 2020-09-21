@@ -1,0 +1,27 @@
+ext {
+    depsVersion = [
+            support: "27.1.1",
+    ]
+    cfgs = [
+            compileSdkVersion             : 28,
+            buildToolsVersion             : "28.0.3",
+            minSdkVersion                 : 14,
+            targetSdkVersion              : 28,
+            unityVersionCode              :1001,
+            unityVersionName              :"1.0.0.1",
+            sdkversionCode                   : 4003,
+            sdkversionName                   : "4.0.0.3",
+
+            // ------------- Android -------------
+            supportV7                     : "com.android.support:appcompat-v7:${depsVersion.support}",
+            recyclerviewV7                : "com.android.support:recyclerview-v7:${depsVersion.support}",
+            cardviewV7                    : "com.android.support:cardview-v7:${depsVersion.support}",
+            customtabs                    : "com.android.support:customtabs:${depsVersion.support}",
+            design                        : "com.android.support:design:${depsVersion.support}",
+            percent                       : "com.android.support:percent:${depsVersion.support}",
+            exifinterface                 : "com.android.support:exifinterface:${depsVersion.support}",
+            transition                    : "com.android.support:transition:${depsVersion.support}",
+
+
+    ]
+}
