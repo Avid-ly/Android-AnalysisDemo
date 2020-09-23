@@ -131,7 +131,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void login(View view) {
-        ALYLogin.loginWithAASDK("facebook","player001","ggid1111111","logintoken",null);
+        ALYLogin.guestLogin("player001");
+//        ALYLogin.loginWithAASDK("facebook","player001","ggid1111111","logintoken",null);
 
     }
 
