@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.aly.account.ALYLogin;
 import com.aly.analysis.basicdata.conversion.AFConversionDataResultListener;
@@ -12,10 +13,21 @@ import com.aly.analysis.basicdata.payuserlayer.PayUserLayerDataListener;
 import com.aly.duration.DurationReport;
 import com.aly.sdk.ALYAnalysis;
 import com.aly.zflog.ZFLogReport;
+import com.android.billingclient.api.BillingClient;
+import com.android.billingclient.api.BillingClientStateListener;
+import com.android.billingclient.api.BillingFlowParams;
+import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.Purchase;
+import com.android.billingclient.api.PurchasesUpdatedListener;
+import com.android.billingclient.api.SkuDetails;
+import com.android.billingclient.api.SkuDetailsParams;
+import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -23,15 +35,20 @@ public class MainActivity extends AppCompatActivity {
 
     //private AvidlyPlayableInterstitialAd playILAd;
     private static final String AF_DEV_KEY = "fZvuk792H9hJQKmaTwuXxA";
-    public static final String TAG = "aly";
-
+    public static final String TAG = "aly_demoZ";
+    private BillingClient billingClient;
+    private String skuId = "Your goods id in google play console";
+    private String productId="999999";
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // TODO:上线前请记得设置为false
         ALYAnalysis.enalbeDebugMode(true);
-        ALYAnalysis.init(getApplicationContext(), "999999", "32408");
+        ALYAnalysis.init(getApplicationContext(), productId, "32408");
         DurationReport.initReport("uid001");
+
+        initGoogleBilling();
         AppsFlyerConversionListener conversionListener = new AppsFlyerConversionListener() {
             @Override
             public void onConversionDataSuccess(Map<String, Object> conversionData) {
@@ -88,17 +105,80 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                HashMap map = new HashMap();
-                map.put("key1", "value1");
-                map.put("key2", "value2");
-                ZFLogReport.logReportWithServerAndExtraMap("imaccountid", "imaccountserver", "impurchasejson", "impurchasesignature", map);
-                ZFLogReport.logReportWithExtraMap("imaccountid", "impurchasejson", "impurchasesignature", map);
+                BillingFlowParams billingFlowParams = BillingFlowParams.newBuilder()
+                        .setSkuDetails(skuDetails)
+                        .build();
+                int responseCode = billingClient.launchBillingFlow(MainActivity.this
+                        , billingFlowParams).getResponseCode();
+
             }
         });
 
 
     }
+    private PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
+        @Override
+        public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases) {
+            if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK
+                    && purchases != null) {
+                for (Purchase purchase : purchases) {
+                    ZFLogReport.logReport("user001",purchase.getOriginalJson(),purchase.getSignature());
+                }
+            } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
+                // Handle an error caused by a user cancelling the purchase flow.
+                logAndToast("onPurchasesUpdated USER_CANCELED");
+            } else {
+                // Handle any other error codes.
+                logAndToast("onPurchasesUpdated NOK " + billingResult.getResponseCode() + " msg " + billingResult.getDebugMessage());
+            }
+        }
+    };
+    private SkuDetails skuDetails;
+    /**
+     * 初始化google pay
+     */
+    private void initGoogleBilling() {
+        billingClient = BillingClient.newBuilder(this)
+                .setListener(purchasesUpdatedListener)
+                .enablePendingPurchases()
+                .build();
+        billingClient.startConnection(new BillingClientStateListener() {
+            @Override
+            public void onBillingSetupFinished(BillingResult billingResult) {
+                if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK) {
+                    // The BillingClient is ready. You can query purchases here.
+                    logAndToast("onBillingSetupFinished " + billingResult.getResponseCode());
+                    getGoodsSkuDetail();
+                }
+            }
 
+            @Override
+            public void onBillingServiceDisconnected() {
+                // Try to restart the connection on the next request to
+                // Google Play by calling the startConnection() method.
+                logAndToast("onBillingServiceDisconnected ");
+            }
+        });
+    }
+
+    private void getGoodsSkuDetail() {
+        List<String> skuList = new ArrayList<>();
+        skuList.add(skuId);
+        SkuDetailsParams.Builder params = SkuDetailsParams.newBuilder();
+        params.setSkusList(skuList).setType(BillingClient.SkuType.INAPP);
+        billingClient.querySkuDetailsAsync(params.build(),
+                new SkuDetailsResponseListener() {
+                    @Override
+                    public void onSkuDetailsResponse(BillingResult billingResult,
+                                                     List<SkuDetails> skuDetailsList) {
+                        // Process the result.
+                        logAndToast("onSkuDetailsResponse  billingResult is " + billingResult.getResponseCode() + " msg " + billingResult.getDebugMessage() + " details " + skuDetailsList.toString());
+                        if (skuDetailsList != null && skuDetailsList.size() > 0) {
+                            skuDetails = skuDetailsList.get(0);
+                        }
+                    }
+                });
+    }
 
 
     private void huaWeiLogin() {
@@ -147,6 +227,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFail(String s) {
                 Log.i(TAG, "onFail: PayUserLayer :"+s);
+            }
+        });
+    }
+
+
+    private void logAndToast(final String content) {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(MainActivity.this, content, Toast.LENGTH_SHORT).show();
+                Log.i(TAG, content);
             }
         });
     }

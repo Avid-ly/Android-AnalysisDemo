@@ -9,8 +9,8 @@ ext {
             targetSdkVersion              : 28,
             unityVersionCode              :1001,
             unityVersionName              :"1.0.0.1",
-            sdkversionCode                   : 4003,
-            sdkversionName                   : "4.0.0.3",
+            sdkversionCode                   : 40011,
+            sdkversionName                   : "4.0.0.11",
 
             // ------------- Android -------------
             supportV7                     : "com.android.support:appcompat-v7:${depsVersion.support}",

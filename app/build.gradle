@@ -31,9 +31,12 @@ repositories {
 dependencies {
     compile 'com.android.installreferrer:installreferrer:1.1'
     implementation 'com.appsflyer:af-android-sdk:5.0.0'
-    implementation 'com.aly.sdk:analysissdk:4.0.0.6'
+    implementation 'com.aly.sdk:analysissdk:4.0.0.11'
     // aasdk support
     implementation rootProject.ext.cfgs["supportV7"]
 
+    // google pay
+    def billing_version = "3.0.0"
+    implementation "com.android.billingclient:billing:$billing_version"
 
 }
