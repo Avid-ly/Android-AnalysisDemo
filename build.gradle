@@ -6,7 +6,7 @@ buildscript {
         google()
         jcenter()
         maven{
-            url "http://bx-mvn.dataverse.cn:18081/repository/maven-releases/"
+            url "https://mvn-bx.dataverse.cn/repository/maven-releases/"
         }
 //
     }
@@ -23,7 +23,7 @@ allprojects {
         google()
         jcenter()
         maven{
-            url "http://bx-mvn.dataverse.cn:18081/repository/maven-releases/"
+            url "https://mvn-bx.dataverse.cn/repository/maven-releases/"
         }
         
     }
