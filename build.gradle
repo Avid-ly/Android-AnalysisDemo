@@ -4,7 +4,7 @@ apply from: "version_config.gradle"
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         maven{
             url "https://mvn-bx.dataverse.cn/repository/maven-releases/"
         }
@@ -21,7 +21,7 @@ buildscript {
 allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
         maven{
             url "https://mvn-bx.dataverse.cn/repository/maven-releases/"
         }

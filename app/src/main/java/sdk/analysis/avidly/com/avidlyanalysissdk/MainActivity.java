@@ -1,7 +1,10 @@
 package sdk.analysis.avidly.com.avidlyanalysissdk;
 
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -25,6 +28,7 @@ import com.android.billingclient.api.SkuDetailsParams;
 import com.android.billingclient.api.SkuDetailsResponseListener;
 import com.appsflyer.AppsFlyerConversionListener;
 import com.appsflyer.AppsFlyerLib;
+import com.appsflyer.attribution.AppsFlyerRequestListener;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,8 +43,9 @@ public class MainActivity extends AppCompatActivity {
     public static final String TAG = "tasdk_demo";
     private BillingClient billingClient;
     private String skuId = "Your goods id in google play console";
-    private String productId="600215";
+    private String productId = "600284";
     private TextView txtCont;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -50,13 +55,18 @@ public class MainActivity extends AppCompatActivity {
         ALYAnalysis.enalbeDebugMode(true);
         ALYAnalysis.init(getApplicationContext(), productId, "32408", new ALYAnalysis.TasdkinitializdListener() {
             @Override
-            public void onSuccess(String s) {
-                txtCont.setText("init onSuccess userId is: "+s);
-                ALYAnalysis.setAFId(AppsFlyerLib.getInstance().getAppsFlyerUID(getApplicationContext()));
+            public void onSuccess(final String s) {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        txtCont.setText("init onSuccess userId is: " + s);
+                    }
+                });
                 DurationReport.initReport("uid001");
-
                 initGoogleBilling();
-
+                String openId = ALYAnalysis.getOpenId(MainActivity.this);
+                //设置openId
+                AppsFlyerLib.getInstance().setCustomerUserId("openId000001");
                 AppsFlyerConversionListener conversionListener = new AppsFlyerConversionListener() {
                     @Override
                     public void onConversionDataSuccess(Map<String, Object> conversionData) {
@@ -85,12 +95,9 @@ public class MainActivity extends AppCompatActivity {
 
                     @Override
                     public void onAppOpenAttribution(Map<String, String> conversionData) {
-
                         for (String attrName : conversionData.keySet()) {
                             Log.d(TAG, "attribute: " + attrName + " = " + conversionData.get(attrName));
-
                         }
-
                     }
 
                     @Override
@@ -98,15 +105,26 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "error onAttributionFailure : " + errorMessage);
                     }
                 };
+                AppsFlyerLib.getInstance().setDebugLog(true);
                 AppsFlyerLib.getInstance().init(AF_DEV_KEY, conversionListener, getApplicationContext());
-                AppsFlyerLib.getInstance().startTracking(getApplication());
+                AppsFlyerLib.getInstance().start(getApplicationContext(), AF_DEV_KEY, new AppsFlyerRequestListener() {
+                    @Override
+                    public void onSuccess() {
+                        // 设置AFID
+                        ALYAnalysis.setAFId(AppsFlyerLib.getInstance().getAppsFlyerUID(getApplicationContext()));
+                    }
 
+                    @Override
+                    public void onError(int i, @NonNull String s) {
 
+                    }
+                });
             }
+
 
             @Override
             public void onFail(String s) {
-                txtCont.setText("init fail "+ s);
+                txtCont.setText("init fail " + s);
             }
         });
 
@@ -136,13 +154,14 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
     private PurchasesUpdatedListener purchasesUpdatedListener = new PurchasesUpdatedListener() {
         @Override
         public void onPurchasesUpdated(BillingResult billingResult, List<Purchase> purchases) {
             if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.OK
                     && purchases != null) {
                 for (Purchase purchase : purchases) {
-                    ZFLogReport.logReport("user001",purchase.getOriginalJson(),purchase.getSignature());
+                    ZFLogReport.logReport("user001", purchase.getOriginalJson(), purchase.getSignature());
                 }
             } else if (billingResult.getResponseCode() == BillingClient.BillingResponseCode.USER_CANCELED) {
                 // Handle an error caused by a user cancelling the purchase flow.
@@ -154,6 +173,7 @@ public class MainActivity extends AppCompatActivity {
         }
     };
     private SkuDetails skuDetails;
+
     /**
      * 初始化google pay
      */
@@ -231,7 +251,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void login(View view) {
-        
+
         ALYLogin.guestLogin("player0000001");
 //        ALYLogin.loginWithAASDK("facebook","player001","ggid1111111","logintoken",null);
         Log.d(TAG, "login: ");
@@ -243,12 +263,12 @@ public class MainActivity extends AppCompatActivity {
         ALYAnalysis.getPayUserLayerData(new PayUserLayerDataListener() {
             @Override
             public void onSuccess(String s) {
-                Log.i(TAG, "onSuccess: PayUserLayer :"+s);
+                Log.i(TAG, "onSuccess: PayUserLayer :" + s);
             }
 
             @Override
             public void onFail(String s) {
-                Log.i(TAG, "onFail: PayUserLayer :"+s);
+                Log.i(TAG, "onFail: PayUserLayer :" + s);
             }
         });
     }
