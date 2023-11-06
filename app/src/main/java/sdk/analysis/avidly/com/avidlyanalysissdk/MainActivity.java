@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
                         txtCont.setText("init onSuccess userId is: " + s);
                     }
                 });
-                DurationReport.initReport("uid001");
                 initGoogleBilling();
                 String openId = ALYAnalysis.getOpenId(MainActivity.this);
                 //设置openId
@@ -222,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void huaWeiLogin() {
-        (new Thread(new Runnable() {
+        new Thread(new Runnable() {
             @Override
             public void run() {
                 ALYLogin.huaWeiLogin("101051233",
@@ -234,27 +233,14 @@ public class MainActivity extends AppCompatActivity {
                         "1569304494696",
                         "");
             }
-        })).start();
-    }
-
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        DurationReport.onAppResume();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        DurationReport.onAppPause();
+        }).start();
     }
 
     public void login(View view) {
-
         ALYLogin.guestLogin("player0000001");
 //        ALYLogin.loginWithAASDK("facebook","player001","ggid1111111","logintoken",null);
         Log.d(TAG, "login: ");
+        DurationReport.setParam("server01","devZone","player0000001","");
 
     }
 
