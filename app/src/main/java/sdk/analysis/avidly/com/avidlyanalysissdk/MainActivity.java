@@ -51,6 +51,49 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         txtCont = findViewById(R.id.txtContent);
+        String openId = ALYAnalysis.getOpenId(MainActivity.this);
+        //设置openId
+        AppsFlyerLib.getInstance().setCustomerUserId(openId);
+        AppsFlyerConversionListener conversionListener = new AppsFlyerConversionListener() {
+            @Override
+            public void onConversionDataSuccess(Map<String, Object> conversionData) {
+                for (String attrName : conversionData.keySet()) {
+                            Log.d(TAG, "attribute: " + attrName + " = " + conversionData.get(attrName));
+                        }
+
+                }
+
+            @Override
+            public void onConversionDataFail(String errorMessage) {
+                Log.d(TAG, "error getting conversion data: " + errorMessage);
+            }
+
+            @Override
+            public void onAppOpenAttribution(Map<String, String> conversionData) {
+                for (String attrName : conversionData.keySet()) {
+                    Log.d(TAG, "attribute: " + attrName + " = " + conversionData.get(attrName));
+                 }
+            }
+
+            @Override
+            public void onAttributionFailure(String errorMessage) {
+                Log.d(TAG, "error onAttributionFailure : " + errorMessage);
+            }
+        };
+        AppsFlyerLib.getInstance().setDebugLog(true);
+        AppsFlyerLib.getInstance().init(AF_DEV_KEY, conversionListener, getApplicationContext());
+        AppsFlyerLib.getInstance().start(getApplicationContext(), AF_DEV_KEY, new AppsFlyerRequestListener() {
+            @Override
+            public void onSuccess() {
+                        // 设置AFID
+                ALYAnalysis.setAFId(AppsFlyerLib.getInstance().getAppsFlyerUID(getApplicationContext()));
+            }
+
+            @Override
+            public void onError(int i, @NonNull String s) {
+
+            }
+        });
         // TODO:上线前请记得设置为false
         ALYAnalysis.enalbeDebugMode(true);
         ALYAnalysis.init(getApplicationContext(), productId, "32408", new ALYAnalysis.TasdkinitializdListener() {
@@ -63,61 +106,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 initGoogleBilling();
-                String openId = ALYAnalysis.getOpenId(MainActivity.this);
-                //设置openId
-                AppsFlyerLib.getInstance().setCustomerUserId("openId000001");
-                AppsFlyerConversionListener conversionListener = new AppsFlyerConversionListener() {
-                    @Override
-                    public void onConversionDataSuccess(Map<String, Object> conversionData) {
-                        for (String attrName : conversionData.keySet()) {
-                            Log.d(TAG, "attribute: " + attrName + " = " + conversionData.get(attrName));
-                        }
-                        conversionData.put("Campaign", "600107_DW1_GP_L7_0410_WW_VO_Casino/Gambling");
-                        ALYAnalysis.getConversionData(conversionData, new AFConversionDataResultListener() {
-                            @Override
-                            public void onSuccess(String s) {
-                                Log.i(TAG, "onSuccess: " + s);
-
-                            }
-
-                            @Override
-                            public void onFail(String s) {
-                                Log.i(TAG, "onFail: " + s);
-                            }
-                        });
-                    }
-
-                    @Override
-                    public void onConversionDataFail(String errorMessage) {
-                        Log.d(TAG, "error getting conversion data: " + errorMessage);
-                    }
-
-                    @Override
-                    public void onAppOpenAttribution(Map<String, String> conversionData) {
-                        for (String attrName : conversionData.keySet()) {
-                            Log.d(TAG, "attribute: " + attrName + " = " + conversionData.get(attrName));
-                        }
-                    }
-
-                    @Override
-                    public void onAttributionFailure(String errorMessage) {
-                        Log.d(TAG, "error onAttributionFailure : " + errorMessage);
-                    }
-                };
-                AppsFlyerLib.getInstance().setDebugLog(true);
-                AppsFlyerLib.getInstance().init(AF_DEV_KEY, conversionListener, getApplicationContext());
-                AppsFlyerLib.getInstance().start(getApplicationContext(), AF_DEV_KEY, new AppsFlyerRequestListener() {
-                    @Override
-                    public void onSuccess() {
-                        // 设置AFID
-                        ALYAnalysis.setAFId(AppsFlyerLib.getInstance().getAppsFlyerUID(getApplicationContext()));
-                    }
-
-                    @Override
-                    public void onError(int i, @NonNull String s) {
-
-                    }
-                });
+                
             }
 
 
